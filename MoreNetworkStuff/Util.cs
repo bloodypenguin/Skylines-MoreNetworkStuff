@@ -52,7 +52,7 @@ namespace MoreNetworkStuff
 
                 var name = netSegment.Info.name;
                 if (name.Contains("Pedestrian Connection")|| name == "Cargo Connection" ||
-                    name == "Ship Dock" || name == "Ship Dockway" || name == "Bus Station Stop" || name == "Bus Station Way")
+                    name == "Ship Dock" || name == "Ship Dockway" /*|| name == "Bus Station Stop" || name == "Bus Station Way"*/)
                 {
                     mgr.ReleaseSegment(i, false);
                 }
