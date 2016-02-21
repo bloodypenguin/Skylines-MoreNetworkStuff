@@ -41,18 +41,30 @@
     <Reference Include="ICities">
       <HintPath>..\..\..\..\..\Games\Steam\steamapps\common\Cities_Skylines\Cities_Data\Managed\ICities.dll</HintPath>
     </Reference>
+    <Reference Include="PrefabHook">
+      <HintPath>C:\Users\user\AppData\Local\Colossal Order\Cities_Skylines\Addons\Mods\PrefabHook\PrefabHook.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="UnityEngine">
       <HintPath>..\..\..\..\..\Games\Steam\steamapps\common\Cities_Skylines\Cities_Data\Managed\UnityEngine.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BulldozeToolDetour.cs" />
+    <Compile Include="Detours\BulldozeToolDetour.cs" />
+    <Compile Include="Detours\GeneratedGroupPanelDetour.cs" />
+    <Compile Include="Detours\RoadsGroupPanelDetour.cs" />
+    <Compile Include="Detours\RoadsPanelDetour.cs" />
     <Compile Include="LoadingExtension.cs" />
     <Compile Include="PanelsDetours.cs" />
-    <Compile Include="RedirectionHelper.cs" />
+    <Compile Include="Detours\PublicTransportPanelDetour.cs" />
     <Compile Include="MoreNetworkStuff.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Redirection\RedirectionHelper.cs" />
+    <Compile Include="Redirection\RedirectionUtil.cs" />
+    <Compile Include="Redirection\RedirectMethodAttribute.cs" />
+    <Compile Include="Redirection\RedirectReverseAttribute.cs" />
+    <Compile Include="Redirection\TargetTypeAttribute.cs" />
+    <Compile Include="Redirection\Tuple.cs" />
     <Compile Include="Util.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

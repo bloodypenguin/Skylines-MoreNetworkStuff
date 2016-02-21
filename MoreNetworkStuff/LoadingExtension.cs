@@ -1,5 +1,10 @@
-﻿using ColossalFramework.UI;
+﻿using System.Collections.Generic;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using ColossalFramework.UI;
 using ICities;
+using MoreNetworkStuff.Detours;
+using PrefabHook;
 using UnityEngine;
 
 namespace MoreNetworkStuff
@@ -10,6 +15,32 @@ namespace MoreNetworkStuff
         {
             base.OnCreated(loading);
             PanelsDetours.Deploy();
+            if (!IsHooked())
+            {
+                return;
+            }
+            TransportInfoHook.OnPreInitialization += OnPreInitializationTI;
+            TransportInfoHook.Deploy();
+            NetInfoHook.OnPreInitialization += OnPreInitializationNI;
+            NetInfoHook.Deploy();
+        }
+
+        private static void OnPreInitializationTI(TransportInfo info)
+        {
+            if (info.name != "Airplane")
+            {
+                return;
+            }
+            info.m_pathVisibility = ItemClass.Availability.GameAndMap;
+        }
+
+        private static void OnPreInitializationNI(NetInfo info)
+        {
+            if (info.name != "Airplane Path" && info.name != "Ship Path")
+            {
+                return;
+            }
+            info.m_availableIn = ItemClass.Availability.GameAndMap;
         }
 
         public override void OnLevelLoaded(LoadMode mode)
@@ -18,14 +49,14 @@ namespace MoreNetworkStuff
             if (mode == LoadMode.LoadGame || mode == LoadMode.NewGame)
             {
                 BulldozeToolDetour.Deploy();
-                var airplane = PrefabCollection<TransportInfo>.FindLoaded("Airplane");
-                if (airplane == null)
+                if (IsHooked())
                 {
-                    UnityEngine.Debug.LogWarning("MoreNetworkStuff: Airplane not found");
                     return;
                 }
-                airplane.m_pathVisibility = ItemClass.Availability.GameAndMap;
-                //TODO(earalv): redraw airplane paths
+                UIView.library.ShowModal<ExceptionPanel>("ExceptionPanel").SetMessage(
+                    "Missing dependency",
+                    "'More Network Stuff' mod requires the 'Prefab Hook' mod to work properly. Please subscribe to the mod and restart the game!",
+                    false);
             }
             else if (mode == LoadMode.LoadAsset || mode == LoadMode.NewAsset)
             {
@@ -33,7 +64,7 @@ namespace MoreNetworkStuff
                 if (tsBar != null)
                 {
                     var bcButton = MakeButton(tsBar, "Bulldoze Ped. Connections");
-                    bcButton.relativePosition = new Vector3(0,0);
+                    bcButton.relativePosition = new Vector3(0, 0);
                     bcButton.eventClick +=
                     (comp, param) =>
                     {
@@ -81,6 +112,17 @@ namespace MoreNetworkStuff
         {
             base.OnReleased();
             PanelsDetours.Revert();
+            if (!IsHooked())
+            {
+                return;
+            }
+            TransportInfoHook.Revert();
+            NetInfoHook.Revert();
+        }
+
+        private static bool IsHooked()
+        {
+            return Util.IsModActive("Prefab Hook");
         }
     }
 }

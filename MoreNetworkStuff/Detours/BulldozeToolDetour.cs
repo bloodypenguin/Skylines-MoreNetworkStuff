@@ -4,9 +4,11 @@ using System.Reflection;
 using ColossalFramework;
 using ColossalFramework.Plugins;
 using ICities;
+using MoreNetworkStuff.Redirection;
 
-namespace MoreNetworkStuff
+namespace MoreNetworkStuff.Detours
 {
+    //here we do some manual detours
     public class BulldozeToolDetour
     {
         private static bool _deployed;
@@ -54,7 +56,7 @@ namespace MoreNetworkStuff
 
         public ToolBase.RaycastService GetServiceVanilla()
         {
-            if ((Singleton<ToolManager>.instance.m_properties.m_mode & ItemClass.Availability.MapAndAsset) != ItemClass.Availability.None)
+            if ((Singleton<ToolManager>.instance.m_properties.m_mode & ItemClass.Availability.Editors) != ItemClass.Availability.None)
             {
                 switch (Singleton<InfoManager>.instance.CurrentMode)
                 {
@@ -71,6 +73,7 @@ namespace MoreNetworkStuff
                 switch (Singleton<InfoManager>.instance.CurrentMode)
                 {
                     case InfoManager.InfoMode.Water:
+                    case InfoManager.InfoMode.Heating:
                         return new ToolBase.RaycastService(ItemClass.Service.Water, ItemClass.SubService.None, ItemClass.Layer.Default | ItemClass.Layer.WaterPipes);
                     case InfoManager.InfoMode.Transport:
                         //added: | ItemClass.Layer.AirplanePaths | ItemClass.Layer.ShipPaths
@@ -92,7 +95,7 @@ namespace MoreNetworkStuff
 
             ItemClass.Availability mode = Singleton<ToolManager>.instance.m_properties.m_mode;
 
-            if ((mode & ItemClass.Availability.MapAndAsset) != ItemClass.Availability.None)
+            if ((mode & ItemClass.Availability.Editors) != ItemClass.Availability.None)
             {
                 InfoManager.InfoMode currentMode = Singleton<InfoManager>.instance.CurrentMode;
                 if (currentMode == InfoManager.InfoMode.Transport)
@@ -109,7 +112,7 @@ namespace MoreNetworkStuff
             else
             {
                 InfoManager.InfoMode currentMode = Singleton<InfoManager>.instance.CurrentMode;
-                if (currentMode == InfoManager.InfoMode.Water)
+                if (currentMode == InfoManager.InfoMode.Water || currentMode == InfoManager.InfoMode.Heating)
                 {
                     return new ToolBase.RaycastService(ItemClass.Service.Water, ItemClass.SubService.None, ItemClass.Layer.Default | ItemClass.Layer.WaterPipes);
                 }
@@ -128,17 +131,24 @@ namespace MoreNetworkStuff
 
         private static bool IsMoledozerActive()
         {
-            var plugins = PluginManager.instance.GetPluginsInfo();
-            foreach (var name in from plugin in plugins.Where(p => p.isEnabled)
-                                 select plugin.GetInstances<IUserMod>()
-                                     into instances
+            try
+            {
+                var plugins = PluginManager.instance.GetPluginsInfo();
+                foreach (var name in from plugin in plugins.Where(p => p.isEnabled)
+                                     select plugin.GetInstances<IUserMod>()
+                                         into instances
                                      where instances.Any()
                                      select instances[0].Name into name
                                      where name == "Moledozer"
                                      select name)
+                {
+                    UnityEngine.Debug.Log($"MoreNetworkStuff: {name} is active");
+                    return true;
+                }
+            }
+            catch (Exception e)
             {
-                UnityEngine.Debug.Log(String.Format("MoreNetworkStuff: {0} is active", name));
-                return true;
+                UnityEngine.Debug.LogWarning($"MoreNetworkStuff: error while looking for moledozer: {e.Message}");
             }
             return false;
         }

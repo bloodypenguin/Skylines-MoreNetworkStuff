@@ -1,7 +1,10 @@
-﻿using System;
+﻿
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using ColossalFramework;
+using MoreNetworkStuff.Redirection;
 
 namespace MoreNetworkStuff
 {
@@ -41,55 +44,16 @@ namespace MoreNetworkStuff
             "Station Track Tunnel"
         };
 
+        private static Dictionary<MethodInfo, RedirectCallsState> redirects;
         private static bool _deployed;
-        private static RedirectCallsState _state1;
-        private static MethodInfo _originalInfo1;
-        private static MethodInfo _detourInfo1;
-        private static RedirectCallsState _state2;
-        private static MethodInfo _originalInfo2;
-        private static MethodInfo _detourInfo2;
-        private static RedirectCallsState _state3;
-        private static MethodInfo _originalInfo3;
-        private static MethodInfo _detourInfo3;
-
-        private static RedirectCallsState _state4;
-        private static MethodInfo _originalInfo4;
-        private static MethodInfo _detourInfo4;
-
 
         public static void Deploy()
         {
             if (_deployed) return;
-            try
+            redirects = new Dictionary<MethodInfo, RedirectCallsState>();
+            foreach (var type in Assembly.GetExecutingAssembly().GetTypes())
             {
-                _originalInfo1 = typeof (RoadsPanel).GetMethod("IsPlacementRelevant",
-                    BindingFlags.Instance | BindingFlags.NonPublic, null, new[] {typeof (NetInfo)}, null);
-                _detourInfo1 = typeof (RoadsPanelDetour).GetMethod("IsPlacementRelevant",
-                    BindingFlags.Instance | BindingFlags.NonPublic, null, new[] {typeof (NetInfo)}, null);
-                _state1 = RedirectionHelper.RedirectCalls(_originalInfo1, _detourInfo1);
-
-                _originalInfo2 = typeof (RoadsGroupPanel).GetMethod("IsServiceValid",
-                    BindingFlags.Instance | BindingFlags.NonPublic, null, new[] {typeof (PrefabInfo)}, null);
-                _detourInfo2 = typeof (RoadsGroupPanelDetour).GetMethod("IsServiceValid",
-                    BindingFlags.Instance | BindingFlags.NonPublic, null, new[] {typeof (PrefabInfo)}, null);
-                _state2 = RedirectionHelper.RedirectCalls(_originalInfo2, _detourInfo2);
-
-                _originalInfo3 = typeof (GeneratedGroupPanel).GetMethod("IsPlacementRelevant",
-                    BindingFlags.Instance | BindingFlags.NonPublic, null, new[] {typeof (NetInfo)}, null);
-                _detourInfo3 = typeof (GeneratedGroupPanelDetour).GetMethod("IsPlacementRelevant",
-                    BindingFlags.Instance | BindingFlags.NonPublic, null, new[] {typeof (NetInfo)}, null);
-                _state3 = RedirectionHelper.RedirectCalls(_originalInfo3, _detourInfo3);
-
-                _originalInfo4 = typeof(RoadsPanel).GetMethod("IsPlacementRelevant",
-                    BindingFlags.Instance | BindingFlags.NonPublic, null, new[] { typeof(BuildingInfo) }, null);
-                _detourInfo4 = typeof(RoadsPanelDetour).GetMethod("IsPlacementRelevant",
-                    BindingFlags.Instance | BindingFlags.NonPublic, null, new[] { typeof(BuildingInfo) }, null);
-                _state4 = RedirectionHelper.RedirectCalls(_originalInfo4, _detourInfo4);
-            }
-            catch (Exception e)
-            {
-                UnityEngine.Debug.LogException(e);  
-                Revert();
+                redirects.AddRange(RedirectionUtil.RedirectType(type));
             }
             _deployed = true;
         }
@@ -97,97 +61,19 @@ namespace MoreNetworkStuff
         public static void Revert()
         {
             if (!_deployed) return;
-            try
+            if (redirects == null)
             {
-                if (_originalInfo1 != null && _detourInfo1 != null)
-                {
-                    RedirectionHelper.RevertRedirect(_originalInfo1, _state1);
-                }
+                return;
             }
-            catch (Exception e)
+            foreach (var kvp in redirects)
             {
-                UnityEngine.Debug.LogException(e);
+                RedirectionHelper.RevertRedirect(kvp.Key, kvp.Value);
             }
-            try
-            {
-                if (_originalInfo2 != null && _detourInfo2 != null)
-                {
-                    RedirectionHelper.RevertRedirect(_originalInfo2, _state2);
-                }
-
-            }
-            catch (Exception e)
-            {
-                UnityEngine.Debug.LogException(e);
-            }
-            try
-            {
-                if (_originalInfo3 != null && _detourInfo3 != null)
-                {
-                    RedirectionHelper.RevertRedirect(_originalInfo3, _state3);
-                }
-            }
-            catch (Exception e)
-            {
-                UnityEngine.Debug.LogException(e);
-            }
-            try
-            {
-                if (_originalInfo4 != null && _detourInfo4 != null)
-                {
-                    RedirectionHelper.RevertRedirect(_originalInfo4, _state4);
-                }
-            }
-            catch (Exception e)
-            {
-                UnityEngine.Debug.LogException(e);
-            }
+            redirects.Clear();
             _deployed = false;
         }
 
-
-
-        private class RoadsPanelDetour : GeneratedScrollPanel
-        {
-            protected override bool IsPlacementRelevant(NetInfo info)
-            {
-                return PanelsDetours.IsPlacementRelevant(info, isMapEditor, isGame, isAssetEditor);
-            }
-
-            protected override bool IsPlacementRelevant(BuildingInfo info)
-            {
-                return base.IsPlacementRelevant(info);
-            }
-
-            public override ItemClass.Service service
-            {
-                get { throw new System.NotImplementedException(); }
-            }
-
-        }
-
-        private class RoadsGroupPanelDetour : GeneratedGroupPanel
-        {
-            protected override bool IsServiceValid(PrefabInfo info)
-            {
-                if (info.GetService() == this.service || this.isMapEditor &&
-                    (info.GetService() == ItemClass.Service.PublicTransport/* || info.GetService() == ItemClass.Service.Beautification*/))
-                    return true;
-                if (this.isAssetEditor && info.GetService() == ItemClass.Service.PublicTransport)
-                    return info.GetSubService() == ItemClass.SubService.PublicTransportTrain || info.GetSubService() == ItemClass.SubService.PublicTransportMetro || info.GetSubService() == ItemClass.SubService.None;
-                return false;
-            }
-        }
-
-        private class GeneratedGroupPanelDetour : GeneratedGroupPanel
-        {
-            private bool IsPlacementRelevant(NetInfo info)
-            {
-                return PanelsDetours.IsPlacementRelevant(info, isMapEditor, isGame, isAssetEditor);
-            }
-        }
-
-        private static bool IsPlacementRelevant(NetInfo info, bool isMapEditor, bool isGame, bool isAssetEditor)
+        public static bool IsPlacementRelevant(NetInfo info, bool isMapEditor, bool isGame, bool isAssetEditor)
         {
             bool flag = true;
             if (Singleton<ToolManager>.exists)
