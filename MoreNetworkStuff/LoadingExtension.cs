@@ -126,7 +126,7 @@ namespace MoreNetworkStuff
             {
                 case LoadMode.NewGame:
                 case LoadMode.LoadGame:
-                    GameObject.Find("BeautificationPathsPanel").GetComponent<BeautificationPanel>().RefreshPanel();
+                    RefreshPanelInGame();
                     break;
             }
 
@@ -157,6 +157,11 @@ namespace MoreNetworkStuff
         {
             base.OnLevelUnloading();
             BulldozeToolDetour.Revert();
+            var initializer = GameObject.Find("MoreNetworkStuffInitializer");
+            if (initializer != null)
+            {
+                Object.Destroy(initializer);
+            }
         }
 
         public override void OnReleased()
@@ -174,6 +179,22 @@ namespace MoreNetworkStuff
         private static bool IsHooked()
         {
             return Util.IsModActive("Prefab Hook");
+        }
+
+        private static void RefreshPanelInGame()
+        {
+            new GameObject("MoreNetworkStuffInitializer").AddComponent<Initializer>();
+        }
+
+        private class Initializer : MonoBehaviour
+        {
+            private void Update()
+            {
+                var pathsPanel = GameObject.Find("LandscapingPathsPanel");
+                var beautificationPanel = pathsPanel?.GetComponent<BeautificationPanel>();
+                beautificationPanel?.RefreshPanel();
+                Destroy(this);
+            }
         }
     }
 }
