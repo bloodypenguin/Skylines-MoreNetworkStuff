@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using ColossalFramework.Plugins;
+using ColossalFramework.UI;
 using ICities;
 using UnityEngine;
 
@@ -52,36 +54,63 @@ namespace MoreNetworkStuff
                 target.Add(element);
         }
 
-        public static void MakeAllSegmentsEditable()
+        public static Texture2D LoadTextureFromAssembly(string path, bool readOnly = true)
         {
-            // change this to true to make the bulldozer work for train station tracks and other networks
-            bool makeAllNetworksEditable = true;
-
-            var mgr = NetManager.instance;
-            for (var i = 0; i < mgr.m_segments.m_size; i++)
+            try
             {
-                if (mgr.m_segments.m_buffer[i].m_flags == NetSegment.Flags.None) continue;
-
-                Debug.Log("Segment " + i + " -  Type: " + mgr.m_segments.m_buffer[i].Info.name + ", Length: " + mgr.m_segments.m_buffer[i].m_averageLength);
-                if (makeAllNetworksEditable) mgr.m_segments.m_buffer[i].m_flags &= ~NetSegment.Flags.Untouchable;
+                var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+                using (var textureStream = assembly.GetManifestResourceStream(path))
+                {
+                    return LoadTextureFromStream(readOnly, textureStream);
+                }
+            }
+            catch (Exception e)
+            {
+                UnityEngine.Debug.LogException(e);
+                return null;
             }
         }
 
-        public static void BulldozePedestrianConnections()
+        public static UITextureAtlas CreateAtlas(Texture2D[] sprites)
         {
-            var mgr = NetManager.instance;
-            for (ushort i = 0; i < mgr.m_segments.m_size; i++)
-            {
-                var netSegment = mgr.m_segments.m_buffer[i];
-                if (netSegment.m_flags == NetSegment.Flags.None) continue;
+            UITextureAtlas atlas = ScriptableObject.CreateInstance<UITextureAtlas>();
+            atlas.material = new Material(GetUIAtlasShader());
 
-                var name = netSegment.Info.name;
-                if (name.Contains("Pedestrian Connection")|| name == "Cargo Connection" ||
-                    name == "Ship Dock" || name == "Ship Dockway" /*|| name == "Bus Station Stop" || name == "Bus Station Way"*/)
-                {
-                    mgr.ReleaseSegment(i, false);
-                }
+            Texture2D texture = new Texture2D(0, 0);
+            Rect[] rects = texture.PackTextures(sprites, 0);
+
+            for (int i = 0; i < rects.Length; ++i)
+            {
+                Texture2D sprite = sprites[i];
+                Rect rect = rects[i];
+
+                UITextureAtlas.SpriteInfo spriteInfo = new UITextureAtlas.SpriteInfo();
+                spriteInfo.name = sprite.name;
+                spriteInfo.texture = sprite;
+                spriteInfo.region = rect;
+                spriteInfo.border = new RectOffset();
+
+                atlas.AddSprite(spriteInfo);
             }
+            atlas.material.mainTexture = texture;
+            return atlas;
+        }
+
+        private static Shader GetUIAtlasShader()
+        {
+            return UIView.GetAView().defaultAtlas.material.shader;
+        }
+
+        private static Texture2D LoadTextureFromStream(bool readOnly, Stream textureStream)
+        {
+            var buf = new byte[textureStream.Length]; //declare arraysize
+            textureStream.Read(buf, 0, buf.Length); // read from stream to byte array
+            textureStream.Close();
+            var tex = new Texture2D(2, 2, TextureFormat.ARGB32, false);
+            tex.LoadImage(buf);
+            tex.Apply(false, readOnly);
+            tex.name = Guid.NewGuid().ToString();
+            return tex;
         }
     }
 }

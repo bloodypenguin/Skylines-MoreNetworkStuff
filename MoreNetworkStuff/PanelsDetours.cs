@@ -10,7 +10,7 @@ namespace MoreNetworkStuff
 {
     public class PanelsDetours
     {
-        private static readonly string[] AssetEditorProceduralWhitelist =
+        public static readonly string[] AssetEditorProceduralWhitelist =
         {
             "Train Station Track",
             "Train Cargo Track",

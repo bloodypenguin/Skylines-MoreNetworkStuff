@@ -1,6 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Reflection;
+using System.Resources;
 using System.Runtime.InteropServices;
+using ColossalFramework;
+using ColossalFramework.Globalization;
 using ColossalFramework.UI;
 using ICities;
 using MoreNetworkStuff.Detours;
@@ -11,6 +14,8 @@ namespace MoreNetworkStuff
 {
     public class LoadingExtension : LoadingExtensionBase
     {
+        private static FieldInfo _uiCategoryfield = typeof(PrefabInfo).GetField("m_UICategory", BindingFlags.NonPublic | BindingFlags.Instance);
+
         public override void OnCreated(ILoading loading)
         {
             base.OnCreated(loading);
@@ -36,27 +41,36 @@ namespace MoreNetworkStuff
 
         private static void OnPreInitializationNI(NetInfo info)
         {
-            if (info.name != "Airplane Path" && info.name != "Ship Path")
-            {
-                return;
+            if (info.name == "Airplane Path" || info.name == "Ship Path")
+            {   
+                info.m_availableIn = ItemClass.Availability.GameAndMap;
             }
-            info.m_availableIn = ItemClass.Availability.GameAndMap;
+            if (info.name == "Pedestrian Connection")
+            {
+                info.m_placementStyle = ItemClass.Placement.Manual;
+                info.m_availableIn = ItemClass.Availability.All;
+            }
+            if (info.name?.Contains("Pedestrian Connection") ?? false)
+            {
+                info.m_class.m_service = ItemClass.Service.Beautification;
+                _uiCategoryfield.SetValue(info, "BeautificationPaths");
+            }
         }
 
         public override void OnLevelLoaded(LoadMode mode)
         {
             base.OnLevelLoaded(mode);
-            if (mode == LoadMode.LoadGame || mode == LoadMode.NewGame)
+            if (!IsHooked())
             {
-                BulldozeToolDetour.Deploy();
-                if (IsHooked())
-                {
-                    return;
-                }
                 UIView.library.ShowModal<ExceptionPanel>("ExceptionPanel").SetMessage(
                     "Missing dependency",
                     "'More Network Stuff' mod requires the 'Prefab Hook' mod to work properly. Please subscribe to the mod and restart the game!",
                     false);
+                return;
+            }
+            if (mode == LoadMode.LoadGame || mode == LoadMode.NewGame)
+            {
+                BulldozeToolDetour.Deploy();
             }
             else if (mode == LoadMode.LoadAsset || mode == LoadMode.NewAsset)
             {
@@ -68,15 +82,52 @@ namespace MoreNetworkStuff
                     bcButton.eventClick +=
                     (comp, param) =>
                     {
-                        Util.BulldozePedestrianConnections();
+                        Scripts.BulldozePedestrianConnections();
                     };
                     var seButton = MakeButton(tsBar, "Make All Segments Editable");
                     seButton.relativePosition = new Vector3(0, 26);
                     seButton.eventClick += (comp, param) =>
                     {
-                        Util.MakeAllSegmentsEditable();
+                        Scripts.MakeAllSegmentsEditable();
                     };
                 }
+            }
+            var locale = (Locale)typeof(LocaleManager).GetField("m_Locale", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(SingletonLite<LocaleManager>.instance);
+
+            for (uint i=0;i<PrefabCollection<NetInfo>.PrefabCount();i++)
+            {
+                var info = PrefabCollection<NetInfo>.GetPrefab(i);
+                if (info == null)
+                {
+                    continue;
+                }
+                var key = new Locale.Key { m_Identifier = "NET_TITLE", m_Key = info.name };
+                if (!locale.Exists(key))
+                {
+                    locale.AddLocalizedString(key, info.name);
+                }
+                key = new Locale.Key { m_Identifier = "NET_DESC", m_Key = info.name };
+                if (!locale.Exists(key))
+                {
+                    locale.AddLocalizedString(key, info.name);
+                }
+                if (info.name.Contains("Pedestrian Connection"))
+                {
+                    var thumb = Util.LoadTextureFromAssembly($"{typeof(MoreNetworkStuff).Name}.resource.thumb.png", false);
+                    var tooltip = Util.LoadTextureFromAssembly($"{typeof(MoreNetworkStuff).Name}.resource.tooltip.png", false);
+                    var atlas = Util.CreateAtlas(new[] { thumb, tooltip });
+                    info.m_Atlas = atlas;
+                    info.m_Thumbnail = thumb.name;
+                    info.m_InfoTooltipAtlas = atlas;
+                    info.m_InfoTooltipThumbnail = tooltip.name;
+                }
+            }
+            switch (mode)
+            {
+                case LoadMode.NewGame:
+                case LoadMode.LoadGame:
+                    GameObject.Find("BeautificationPathsPanel").GetComponent<BeautificationPanel>().RefreshPanel();
+                    break;
             }
 
         }

@@ -38,9 +38,6 @@ namespace MoreNetworkStuff
             }
         }
 
-        public string Description
-        {
-            get { return "Adds more network stuff to place"; }
-        }
+        public string Description => "Adds more network stuff to place";
     }
 }
