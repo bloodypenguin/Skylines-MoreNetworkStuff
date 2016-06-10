@@ -47,7 +47,7 @@ namespace MoreNetworkStuff
             }
             if (info.name == "Pedestrian Connection")
             {
-                info.m_placementStyle = ItemClass.Placement.Manual;
+                //info.m_placementStyle = ItemClass.Placement.Manual;
                 info.m_availableIn = ItemClass.Availability.All;
             }
             if (info.name?.Contains("Pedestrian Connection") ?? false)
