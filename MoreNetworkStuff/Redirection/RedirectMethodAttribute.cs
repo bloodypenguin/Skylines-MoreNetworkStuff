@@ -3,7 +3,7 @@
 namespace MoreNetworkStuff.Redirection
 {
     [AttributeUsage(AttributeTargets.Method)]
-    internal class RedirectMethodAttribute : Attribute
+    public class RedirectMethodAttribute : Attribute
     {
         public RedirectMethodAttribute()
         {

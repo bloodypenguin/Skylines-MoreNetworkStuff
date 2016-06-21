@@ -41,7 +41,8 @@ namespace MoreNetworkStuff
             "Station Track Elevated Narrow (CNP)",
             "Station Track Sunken",
             "Station Track Sunken (NP)",
-            "Station Track Tunnel"
+            "Station Track Tunnel",
+            "Tram Station Track"
         };
 
         private static Dictionary<MethodInfo, RedirectCallsState> redirects;

@@ -62,6 +62,7 @@
     <Compile Include="Redirection\RedirectionHelper.cs" />
     <Compile Include="Redirection\RedirectionUtil.cs" />
     <Compile Include="Redirection\RedirectMethodAttribute.cs" />
+    <Compile Include="Redirection\Redirector.cs" />
     <Compile Include="Redirection\RedirectReverseAttribute.cs" />
     <Compile Include="Redirection\TargetTypeAttribute.cs" />
     <Compile Include="Redirection\Tuple.cs" />
