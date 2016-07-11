@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Linq;
+using System.Reflection;
 using ColossalFramework;
 using ColossalFramework.Globalization;
 using ColossalFramework.UI;
@@ -13,6 +14,20 @@ namespace MoreNetworkStuff
     public class LoadingExtension : LoadingExtensionBase
     {
         private static FieldInfo _uiCategoryfield = typeof(PrefabInfo).GetField("m_UICategory", BindingFlags.NonPublic | BindingFlags.Instance);
+
+        public static readonly string[] ConnectionNetworks =
+        {
+            "Cargo Connection",
+            "Ship Dock",
+            "Ship Dockway",
+            "Pedestrian Connection",
+            "Pedestrian Connection Surface",
+            "Pedestrian Connection Underground",
+            "Pedestrian Connection Inside",
+            "Bus Station Stop",
+            "Bus Station Way",
+        };
+
 
         public override void OnCreated(ILoading loading)
         {
@@ -40,7 +55,7 @@ namespace MoreNetworkStuff
         private static void OnPreInitializationNI(NetInfo info)
         {
             if (info.name == "Airplane Path" || info.name == "Ship Path")
-            {   
+            {
                 info.m_availableIn = ItemClass.Availability.GameAndMap;
             }
             if (info.name == "Pedestrian Connection")
@@ -52,6 +67,11 @@ namespace MoreNetworkStuff
             {
                 info.m_class.m_service = ItemClass.Service.Beautification;
                 _uiCategoryfield.SetValue(info, "BeautificationPaths");
+                var ai = info.GetComponent<PedestrianPathAI>();
+                ai.m_tunnelInfo = info;
+                ai.m_bridgeInfo = info;
+                ai.m_elevatedInfo = info;
+                ai.m_slopeInfo = info;
             }
         }
 
@@ -89,10 +109,12 @@ namespace MoreNetworkStuff
                         Scripts.MakeAllSegmentsEditable();
                     };
                 }
+                var pedestrianConnection = PrefabCollection<NetInfo>.FindLoaded("Pedestrian Connection");
+                pedestrianConnection.m_class.m_layer = ItemClass.Layer.Default | ItemClass.Layer.MetroTunnels;
             }
             var locale = (Locale)typeof(LocaleManager).GetField("m_Locale", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(SingletonLite<LocaleManager>.instance);
-
-            for (uint i=0;i<PrefabCollection<NetInfo>.PrefabCount();i++)
+            var field = typeof(PrefabInfo).GetField("m_UICategory", BindingFlags.Instance | BindingFlags.NonPublic);
+            for (uint i = 0; i < PrefabCollection<NetInfo>.PrefabCount(); i++)
             {
                 var info = PrefabCollection<NetInfo>.GetPrefab(i);
                 if (info == null)
@@ -109,15 +131,26 @@ namespace MoreNetworkStuff
                 {
                     locale.AddLocalizedString(key, info.name);
                 }
-                if (info.name.Contains("Pedestrian Connection"))
+                var thumb = Util.LoadTextureFromAssembly($"{typeof(MoreNetworkStuff).Name}.resource.thumb.png", false);
+                var tooltip = Util.LoadTextureFromAssembly($"{typeof(MoreNetworkStuff).Name}.resource.tooltip.png",
+                    false);
+                var atlas = Util.CreateAtlas(new[] { thumb, tooltip });
+                if (ConnectionNetworks.Contains(info.name))
                 {
-                    var thumb = Util.LoadTextureFromAssembly($"{typeof(MoreNetworkStuff).Name}.resource.thumb.png", false);
-                    var tooltip = Util.LoadTextureFromAssembly($"{typeof(MoreNetworkStuff).Name}.resource.tooltip.png", false);
-                    var atlas = Util.CreateAtlas(new[] { thumb, tooltip });
                     info.m_Atlas = atlas;
                     info.m_Thumbnail = thumb.name;
                     info.m_InfoTooltipAtlas = atlas;
                     info.m_InfoTooltipThumbnail = tooltip.name;
+                    info.m_maxHeight = 5;
+                    info.m_minHeight = -5;
+                }
+                else if (mode == LoadMode.LoadAsset || mode == LoadMode.NewAsset)
+                {
+                    var category = (string)field.GetValue(info);
+                    if (category == "LandscapingWaterStructures")
+                    {
+                        field.SetValue(info, "BeautificationPaths");
+                    }
                 }
             }
             switch (mode)

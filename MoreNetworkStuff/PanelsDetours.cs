@@ -42,7 +42,16 @@ namespace MoreNetworkStuff
             "Station Track Sunken",
             "Station Track Sunken (NP)",
             "Station Track Tunnel",
-            "Tram Station Track"
+            "Tram Station Track",
+            "Quay",
+            "Canal",
+            "Canal2",
+            "Canal3",
+            "Flood Wall",
+            "Castle Wall 1",
+            "Castle Wall 2",
+            "Castle Wall 3",
+            "Trench Ruins 01",
         };
 
         private static Dictionary<MethodInfo, RedirectCallsState> redirects;
