@@ -92,23 +92,6 @@ namespace MoreNetworkStuff
             }
             else if (mode == LoadMode.LoadAsset || mode == LoadMode.NewAsset)
             {
-                var tsBar = UIView.Find("TSBar");
-                if (tsBar != null)
-                {
-                    var bcButton = MakeButton(tsBar, "Bulldoze Ped. Connections");
-                    bcButton.relativePosition = new Vector3(0, 0);
-                    bcButton.eventClick +=
-                    (comp, param) =>
-                    {
-                        Scripts.BulldozePedestrianConnections();
-                    };
-                    var seButton = MakeButton(tsBar, "Make All Segments Editable");
-                    seButton.relativePosition = new Vector3(0, 26);
-                    seButton.eventClick += (comp, param) =>
-                    {
-                        Scripts.MakeAllSegmentsEditable();
-                    };
-                }
                 var pedestrianConnection = PrefabCollection<NetInfo>.FindLoaded("Pedestrian Connection");
                 pedestrianConnection.m_class.m_layer = ItemClass.Layer.Default | ItemClass.Layer.MetroTunnels;
             }

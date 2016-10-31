@@ -42,7 +42,7 @@
       <HintPath>..\..\..\..\..\Games\Steam\steamapps\common\Cities_Skylines\Cities_Data\Managed\ICities.dll</HintPath>
     </Reference>
     <Reference Include="PrefabHook">
-      <HintPath>C:\Users\user\AppData\Local\Colossal Order\Cities_Skylines\Addons\Mods\PrefabHook\PrefabHook.dll</HintPath>
+      <HintPath>..\lib\PrefabHook.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="UnityEngine">
@@ -66,12 +66,15 @@
     <Compile Include="Redirection\RedirectReverseAttribute.cs" />
     <Compile Include="Redirection\TargetTypeAttribute.cs" />
     <Compile Include="Redirection\Tuple.cs" />
-    <Compile Include="Scripts.cs" />
     <Compile Include="Util.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="resource\thumb.png" />
     <EmbeddedResource Include="resource\tooltip.png" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <Content Include="lib\PrefabHook.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
