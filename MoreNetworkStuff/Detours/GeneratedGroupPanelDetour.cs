@@ -1,4 +1,5 @@
-﻿using MoreNetworkStuff.Redirection;
+﻿using ColossalFramework;
+using MoreNetworkStuff.Redirection;
 
 namespace MoreNetworkStuff.Detours
 {
@@ -8,7 +9,9 @@ namespace MoreNetworkStuff.Detours
         [RedirectMethod]
         private bool IsPlacementRelevant(NetInfo info)
         {
+            //begin mod
             return PanelsDetours.IsPlacementRelevant(info, isMapEditor, isGame, isAssetEditor);
+            //end mod
         }
     }
 }

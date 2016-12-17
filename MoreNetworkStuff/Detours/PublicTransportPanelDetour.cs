@@ -1,10 +1,11 @@
 ﻿using MoreNetworkStuff.Redirection;
 
-namespace MoreNetworkStuff
+namespace MoreNetworkStuff.Detours
 {
     [TargetType(typeof(PublicTransportPanel))]
     public class PublicTransportPanelDetour : GeneratedScrollPanel
     {
+
         [RedirectMethod]
         private bool IsRoadEligibleToPublicTransport(NetInfo info)
         {

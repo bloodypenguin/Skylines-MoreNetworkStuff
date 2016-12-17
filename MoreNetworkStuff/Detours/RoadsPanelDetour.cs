@@ -15,6 +15,10 @@ namespace MoreNetworkStuff.Detours
         [RedirectMethod]
         protected override bool IsPlacementRelevant(BuildingInfo info)
         {
+            if (info.GetService() == ItemClass.Service.Residential)
+            {
+                return true;
+            }
             return base.IsPlacementRelevant(info);
         }
 

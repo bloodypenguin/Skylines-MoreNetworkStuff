@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Reflection;
 using ColossalFramework;
 using ColossalFramework.Globalization;
@@ -8,6 +9,7 @@ using MoreNetworkStuff.Detours;
 using MoreNetworkStuff.Redirection;
 using PrefabHook;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace MoreNetworkStuff
 {
@@ -32,15 +34,44 @@ namespace MoreNetworkStuff
         public override void OnCreated(ILoading loading)
         {
             base.OnCreated(loading);
-            PanelsDetours.Deploy();
             if (!IsHooked())
             {
                 return;
             }
-            TransportInfoHook.OnPreInitialization += OnPreInitializationTI;
-            TransportInfoHook.Deploy();
-            NetInfoHook.OnPreInitialization += OnPreInitializationNI;
-            NetInfoHook.Deploy();
+            switch (loading.currentMode)
+            {
+                case AppMode.Game:
+                    NetInfoHook.OnPreInitialization += OnPreInitializationInGame;
+                    NetInfoHook.Deploy();
+                    TransportInfoHook.OnPreInitialization += OnPreInitializationTI;
+                    TransportInfoHook.Deploy();
+                    Redirector<BulldozeToolDetour>.Deploy();
+                    Redirector<PublicTransportPanelDetour>.Deploy();
+                    break;
+                case AppMode.MapEditor:
+                case AppMode.AssetEditor:
+                    if (loading.currentMode == AppMode.AssetEditor)
+                    {
+                        NetInfoHook.OnPreInitialization += OnPreInitializationAssetEditor;
+                        NetInfoHook.Deploy();
+                    }
+                    Redirector<GeneratedGroupPanelDetour>.Deploy();
+                    Redirector<PublicTransportPanelDetour>.Deploy();
+                    Redirector<RoadsGroupPanelDetour>.Deploy();
+                    Redirector<RoadsPanelDetour>.Deploy();
+                    break;
+                case AppMode.ThemeEditor:
+                    break;
+                case AppMode.ScenarioEditor:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+
+
+
+
+
         }
 
         private static void OnPreInitializationTI(TransportInfo info)
@@ -52,7 +83,7 @@ namespace MoreNetworkStuff
             info.m_pathVisibility = ItemClass.Availability.GameAndMap;
         }
 
-        private static void OnPreInitializationNI(NetInfo info)
+        private static void OnPreInitializationInGame(NetInfo info)
         {
             if (info.name == "Airplane Path" || info.name == "Ship Path")
             {
@@ -63,16 +94,21 @@ namespace MoreNetworkStuff
                 //info.m_placementStyle = ItemClass.Placement.Manual;
                 info.m_availableIn = ItemClass.Availability.All;
             }
-            if (info.name?.Contains("Pedestrian Connection") ?? false)
+        }
+
+        private static void OnPreInitializationAssetEditor(NetInfo info)
+        {
+            if (!(info.name?.Contains("Pedestrian Connection") ?? false))
             {
-                info.m_class.m_service = ItemClass.Service.Beautification;
-                _uiCategoryfield.SetValue(info, "BeautificationPaths");
-                var ai = info.GetComponent<PedestrianPathAI>();
-                ai.m_tunnelInfo = info;
-                ai.m_bridgeInfo = info;
-                ai.m_elevatedInfo = info;
-                ai.m_slopeInfo = info;
+                return;
             }
+            info.m_class.m_service = ItemClass.Service.Beautification;
+            _uiCategoryfield.SetValue(info, "BeautificationPaths");
+            var ai = info.GetComponent<PedestrianPathAI>();
+            ai.m_tunnelInfo = info;
+            ai.m_bridgeInfo = info;
+            ai.m_elevatedInfo = info;
+            ai.m_slopeInfo = info;
         }
 
         public override void OnLevelLoaded(LoadMode mode)
@@ -80,10 +116,7 @@ namespace MoreNetworkStuff
             base.OnLevelLoaded(mode);
             if (!IsHooked())
             {
-                UIView.library.ShowModal<ExceptionPanel>("ExceptionPanel").SetMessage(
-                    "Missing dependency",
-                    "'More Network Stuff' mod requires the 'Prefab Hook' mod to work properly. Please subscribe to the mod and restart the game!",
-                    false);
+                UIView.library.ShowModal<ExceptionPanel>("ExceptionPanel").SetMessage("Missing dependency", "'More Network Stuff' mod requires the 'Prefab Hook' mod to work properly. Please subscribe to the mod and restart the game!", false);
                 return;
             }
             if (mode == LoadMode.LoadGame || mode == LoadMode.NewGame)
@@ -95,7 +128,7 @@ namespace MoreNetworkStuff
                 var pedestrianConnection = PrefabCollection<NetInfo>.FindLoaded("Pedestrian Connection");
                 pedestrianConnection.m_class.m_layer = ItemClass.Layer.Default | ItemClass.Layer.MetroTunnels;
             }
-            var locale = (Locale)typeof(LocaleManager).GetField("m_Locale", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(SingletonLite<LocaleManager>.instance);
+            var locale = (Locale) typeof(LocaleManager).GetField("m_Locale", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(SingletonLite<LocaleManager>.instance);
             var field = typeof(PrefabInfo).GetField("m_UICategory", BindingFlags.Instance | BindingFlags.NonPublic);
             for (uint i = 0; i < PrefabCollection<NetInfo>.PrefabCount(); i++)
             {
@@ -104,20 +137,19 @@ namespace MoreNetworkStuff
                 {
                     continue;
                 }
-                var key = new Locale.Key { m_Identifier = "NET_TITLE", m_Key = info.name };
+                var key = new Locale.Key {m_Identifier = "NET_TITLE", m_Key = info.name};
                 if (!locale.Exists(key))
                 {
                     locale.AddLocalizedString(key, info.name);
                 }
-                key = new Locale.Key { m_Identifier = "NET_DESC", m_Key = info.name };
+                key = new Locale.Key {m_Identifier = "NET_DESC", m_Key = info.name};
                 if (!locale.Exists(key))
                 {
                     locale.AddLocalizedString(key, info.name);
                 }
                 var thumb = Util.LoadTextureFromAssembly($"{typeof(MoreNetworkStuff).Name}.resource.thumb.png", false);
-                var tooltip = Util.LoadTextureFromAssembly($"{typeof(MoreNetworkStuff).Name}.resource.tooltip.png",
-                    false);
-                var atlas = Util.CreateAtlas(new[] { thumb, tooltip });
+                var tooltip = Util.LoadTextureFromAssembly($"{typeof(MoreNetworkStuff).Name}.resource.tooltip.png", false);
+                var atlas = Util.CreateAtlas(new[] {thumb, tooltip});
                 if (ConnectionNetworks.Contains(info.name))
                 {
                     info.m_Atlas = atlas;
@@ -129,7 +161,7 @@ namespace MoreNetworkStuff
                 }
                 else if (mode == LoadMode.LoadAsset || mode == LoadMode.NewAsset)
                 {
-                    var category = (string)field.GetValue(info);
+                    var category = (string) field.GetValue(info);
                     if (category == "LandscapingWaterStructures")
                     {
                         field.SetValue(info, "BeautificationPaths");
@@ -143,12 +175,11 @@ namespace MoreNetworkStuff
                     RefreshPanelInGame();
                     break;
             }
-
         }
 
         private static UIButton MakeButton(UIComponent component, string t)
         {
-            UIButton b = (UIButton)component.AddUIComponent(typeof(UIButton));
+            UIButton b = (UIButton) component.AddUIComponent(typeof(UIButton));
             b.text = t;
             b.width = 200;
             b.height = 24;
@@ -181,7 +212,11 @@ namespace MoreNetworkStuff
         public override void OnReleased()
         {
             base.OnReleased();
-            PanelsDetours.Revert();
+            Redirector<BulldozeToolDetour>.Revert();
+            Redirector<GeneratedGroupPanelDetour>.Revert();
+            Redirector<PublicTransportPanelDetour>.Revert();
+            Redirector<RoadsGroupPanelDetour>.Revert();
+            Redirector<RoadsPanelDetour>.Revert();
             if (!IsHooked())
             {
                 return;

@@ -25,7 +25,6 @@ namespace MoreNetworkStuff
             "Pedestrian Connection Surface",
             "Pedestrian Connection Underground",
             "Pedestrian Connection Inside",
-            "Metro Station Track",
             "Bus Station Stop",
             "Bus Station Way",
             "Train Station Track (C)",
@@ -54,35 +53,6 @@ namespace MoreNetworkStuff
             "Trench Ruins 01",
         };
 
-        private static Dictionary<MethodInfo, RedirectCallsState> redirects;
-        private static bool _deployed;
-
-        public static void Deploy()
-        {
-            if (_deployed) return;
-            redirects = new Dictionary<MethodInfo, RedirectCallsState>();
-            foreach (var type in Assembly.GetExecutingAssembly().GetTypes())
-            {
-                redirects.AddRange(RedirectionUtil.RedirectType(type));
-            }
-            _deployed = true;
-        }
-
-        public static void Revert()
-        {
-            if (!_deployed) return;
-            if (redirects == null)
-            {
-                return;
-            }
-            foreach (var kvp in redirects)
-            {
-                RedirectionHelper.RevertRedirect(kvp.Key, kvp.Value);
-            }
-            redirects.Clear();
-            _deployed = false;
-        }
-
         public static bool IsPlacementRelevant(NetInfo info, bool isMapEditor, bool isGame, bool isAssetEditor)
         {
             bool flag = true;
@@ -94,8 +64,8 @@ namespace MoreNetworkStuff
                 {
                     if (info.m_placementStyle == ItemClass.Placement.Procedural)
                     {
-                        flag |= AssetEditorProceduralWhitelist.Contains(info.name);
-                        flag &= AssetEditorProceduralWhitelist.Contains(info.name);
+                        flag |= (AssetEditorProceduralWhitelist.Contains(info.name) || (info?.name?.Contains("Metro Station Track") ?? false) || (info?.name?.Contains("Metro Track") ?? false));
+                        flag &= (AssetEditorProceduralWhitelist.Contains(info.name) || (info?.name?.Contains("Metro Station Track") ?? false) || (info?.name?.Contains("Metro Track") ?? false));
                     }
                     else if (info.m_placementStyle == ItemClass.Placement.Manual)
                     {

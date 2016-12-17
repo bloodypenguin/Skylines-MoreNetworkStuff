@@ -8,6 +8,11 @@ namespace MoreNetworkStuff.Detours
         [RedirectMethod]
         protected override bool IsServiceValid(PrefabInfo info)
         {
+            if (info.GetService() == ItemClass.Service.Residential)
+            {
+                return true;
+            }
+
             if (info.GetService() == this.service || this.isMapEditor &&
                 (info.GetService() == ItemClass.Service.PublicTransport/* || info.GetService() == ItemClass.Service.Beautification*/))
                 return true;
