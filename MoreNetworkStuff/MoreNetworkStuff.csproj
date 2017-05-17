@@ -50,7 +50,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Detours\BulldozeToolDetour.cs" />
+    <Compile Include="Detours\DefaultToolDetour.cs" />
     <Compile Include="Detours\GeneratedGroupPanelDetour.cs" />
     <Compile Include="Detours\RoadsGroupPanelDetour.cs" />
     <Compile Include="Detours\RoadsPanelDetour.cs" />

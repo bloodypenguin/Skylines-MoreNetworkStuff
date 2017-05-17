@@ -14,11 +14,16 @@ namespace MoreNetworkStuff.Detours
             if (this.category == "PublicTransportTram")
                 return (info.m_vehicleTypes & VehicleInfo.VehicleType.Tram) != VehicleInfo.VehicleType.None;
             //begin mod
-            if (this.category == "PublicTransportPlane")
-                return (info.m_vehicleTypes & VehicleInfo.VehicleType.Plane) != VehicleInfo.VehicleType.None;
             if (this.category == "PublicTransportShip")
-                return (info.m_vehicleTypes & VehicleInfo.VehicleType.Ship) != VehicleInfo.VehicleType.None;
+                return (info.m_vehicleTypes & VehicleInfo.VehicleType.Ferry) != VehicleInfo.VehicleType.None || (info.m_vehicleTypes & VehicleInfo.VehicleType.Ship) != VehicleInfo.VehicleType.None;
+            if (this.category == "PublicTransportPlane")
+                return (info.m_vehicleTypes & VehicleInfo.VehicleType.Blimp) != VehicleInfo.VehicleType.None || (info.m_vehicleTypes & VehicleInfo.VehicleType.Plane) != VehicleInfo.VehicleType.None;
             //end mod
+            if (this.category == "PublicTransportMonorail")
+                return (info.m_vehicleTypes & VehicleInfo.VehicleType.Monorail) != VehicleInfo.VehicleType.None;
+            if (this.category == "PublicTransportCableCar")
+                return (info.m_vehicleTypes & VehicleInfo.VehicleType.CableCar) != VehicleInfo.VehicleType.None;
+            //begin mod
             return false;
         }
 

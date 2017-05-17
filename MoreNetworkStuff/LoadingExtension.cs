@@ -45,7 +45,7 @@ namespace MoreNetworkStuff
                     NetInfoHook.Deploy();
                     TransportInfoHook.OnPreInitialization += OnPreInitializationTI;
                     TransportInfoHook.Deploy();
-                    Redirector<BulldozeToolDetour>.Deploy();
+                    Redirector<DefaultToolDetour>.Deploy();
                     Redirector<PublicTransportPanelDetour>.Deploy();
                     break;
                 case AppMode.MapEditor:
@@ -121,7 +121,7 @@ namespace MoreNetworkStuff
             }
             if (mode == LoadMode.LoadGame || mode == LoadMode.NewGame)
             {
-                BulldozeToolDetour.Deploy();
+                DefaultToolDetour.Deploy();
             }
             else if (mode == LoadMode.LoadAsset || mode == LoadMode.NewAsset)
             {
@@ -201,7 +201,7 @@ namespace MoreNetworkStuff
         public override void OnLevelUnloading()
         {
             base.OnLevelUnloading();
-            BulldozeToolDetour.Revert();
+            DefaultToolDetour.Revert();
             var initializer = GameObject.Find("MoreNetworkStuffInitializer");
             if (initializer != null)
             {
@@ -212,7 +212,7 @@ namespace MoreNetworkStuff
         public override void OnReleased()
         {
             base.OnReleased();
-            Redirector<BulldozeToolDetour>.Revert();
+            Redirector<DefaultToolDetour>.Revert();
             Redirector<GeneratedGroupPanelDetour>.Revert();
             Redirector<PublicTransportPanelDetour>.Revert();
             Redirector<RoadsGroupPanelDetour>.Revert();

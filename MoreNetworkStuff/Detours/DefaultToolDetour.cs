@@ -9,7 +9,7 @@ using MoreNetworkStuff.Redirection;
 namespace MoreNetworkStuff.Detours
 {
     //here we do some manual detours
-    public class BulldozeToolDetour
+    public class DefaultToolDetour
     {
         private static bool _deployed;
         private static RedirectCallsState _state;
@@ -23,10 +23,10 @@ namespace MoreNetworkStuff.Detours
             {
                 if (_originalInfo == null)
                 {
-                    _originalInfo = typeof(BulldozeTool).GetMethod("GetService");
+                    _originalInfo = typeof(DefaultTool).GetMethod("GetService");
                 }
                 var methodName = IsMoledozerActive() ? "GetServiceMoledozer" : "GetServiceVanilla";
-                _detourInfo = typeof(BulldozeToolDetour).GetMethod(methodName);
+                _detourInfo = typeof(DefaultToolDetour).GetMethod(methodName);
                 _state = RedirectionHelper.RedirectCalls(_originalInfo, _detourInfo);
             }
             catch (Exception e)
@@ -64,6 +64,8 @@ namespace MoreNetworkStuff.Detours
                         return new ToolBase.RaycastService(ItemClass.Service.None, ItemClass.SubService.None, ItemClass.Layer.Default | ItemClass.Layer.MetroTunnels | ItemClass.Layer.AirplanePaths | ItemClass.Layer.ShipPaths | ItemClass.Layer.Markers);
                     case InfoManager.InfoMode.Traffic:
                         return new ToolBase.RaycastService(ItemClass.Service.None, ItemClass.SubService.None, ItemClass.Layer.Default | ItemClass.Layer.MetroTunnels | ItemClass.Layer.Markers);
+                    case InfoManager.InfoMode.Underground:
+                        return new ToolBase.RaycastService(ItemClass.Service.None, ItemClass.SubService.None, ItemClass.Layer.MetroTunnels);
                     default:
                         return new ToolBase.RaycastService(ItemClass.Service.None, ItemClass.SubService.None, ItemClass.Layer.Default | ItemClass.Layer.Markers);
                 }
@@ -72,21 +74,26 @@ namespace MoreNetworkStuff.Detours
             {
                 switch (Singleton<InfoManager>.instance.CurrentMode)
                 {
+                    case InfoManager.InfoMode.TrafficRoutes:
+                    case InfoManager.InfoMode.Traffic:
+                        return new ToolBase.RaycastService(ItemClass.Service.None, ItemClass.SubService.None, ItemClass.Layer.Default | ItemClass.Layer.MetroTunnels);
+                    case InfoManager.InfoMode.Underground:
+                        if (Singleton<InfoManager>.instance.CurrentSubMode == InfoManager.SubInfoMode.Default)
+                            return new ToolBase.RaycastService(ItemClass.Service.None, ItemClass.SubService.None, ItemClass.Layer.MetroTunnels);
+                        return new ToolBase.RaycastService(ItemClass.Service.None, ItemClass.SubService.None, ItemClass.Layer.WaterPipes);
                     case InfoManager.InfoMode.Water:
                     case InfoManager.InfoMode.Heating:
                         return new ToolBase.RaycastService(ItemClass.Service.Water, ItemClass.SubService.None, ItemClass.Layer.Default | ItemClass.Layer.WaterPipes);
                     case InfoManager.InfoMode.Transport:
                         //added: | ItemClass.Layer.AirplanePaths | ItemClass.Layer.ShipPaths
-                        return new ToolBase.RaycastService(ItemClass.Service.PublicTransport, ItemClass.SubService.None, ItemClass.Layer.Default | ItemClass.Layer.MetroTunnels | ItemClass.Layer.AirplanePaths | ItemClass.Layer.ShipPaths);
-                    case InfoManager.InfoMode.Traffic:
-                        return new ToolBase.RaycastService(ItemClass.Service.None, ItemClass.SubService.None, ItemClass.Layer.Default | ItemClass.Layer.MetroTunnels);
+                        return new ToolBase.RaycastService(ItemClass.Service.PublicTransport, ItemClass.SubService.None, ItemClass.Layer.Default | ItemClass.Layer.MetroTunnels | ItemClass.Layer.BlimpPaths | ItemClass.Layer.AirplanePaths | ItemClass.Layer.ShipPaths);
                     default:
                         return new ToolBase.RaycastService(ItemClass.Service.None, ItemClass.SubService.None, ItemClass.Layer.Default);
                 }
             }
         }
 
-
+        //TODO(earalov): make sure that support works
         public ToolBase.RaycastService GetServiceMoledozer()
         {
             ItemClass.Layer trafficLayer = (this.GetType() != typeof(BulldozeTool)) ?
@@ -107,6 +114,10 @@ namespace MoreNetworkStuff.Detours
                 {
                     return new ToolBase.RaycastService(ItemClass.Service.None, ItemClass.SubService.None, ItemClass.Layer.Default | ItemClass.Layer.Markers);
                 }
+                if (currentMode != InfoManager.InfoMode.Underground)
+                {
+                    return new ToolBase.RaycastService(ItemClass.Service.None, ItemClass.SubService.None, ItemClass.Layer.MetroTunnels);
+                }
                 return new ToolBase.RaycastService(ItemClass.Service.None, ItemClass.SubService.None, trafficLayer | ItemClass.Layer.Markers);
             }
             else
@@ -119,9 +130,9 @@ namespace MoreNetworkStuff.Detours
                 if (currentMode == InfoManager.InfoMode.Transport)
                 {
                     //added: | ItemClass.Layer.AirplanePaths | ItemClass.Layer.ShipPaths
-                    return new ToolBase.RaycastService(ItemClass.Service.PublicTransport, ItemClass.SubService.None, ItemClass.Layer.Default | ItemClass.Layer.MetroTunnels | ItemClass.Layer.AirplanePaths | ItemClass.Layer.ShipPaths);
+                    return new ToolBase.RaycastService(ItemClass.Service.PublicTransport, ItemClass.SubService.None, ItemClass.Layer.Default | ItemClass.Layer.MetroTunnels | ItemClass.Layer.BlimpPaths | ItemClass.Layer.AirplanePaths | ItemClass.Layer.ShipPaths);
                 }
-                if (currentMode != InfoManager.InfoMode.Traffic)
+                if (currentMode != InfoManager.InfoMode.Traffic && currentMode != InfoManager.InfoMode.TrafficRoutes)
                 {
                     return new ToolBase.RaycastService(ItemClass.Service.None, ItemClass.SubService.None, ItemClass.Layer.Default);
                 }
