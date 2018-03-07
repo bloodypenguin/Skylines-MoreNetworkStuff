@@ -12,7 +12,6 @@ namespace MoreNetworkStuff
     {
         public static readonly string[] AssetEditorProceduralWhitelist =
         {
-            "Train Station Track",
             "Train Cargo Track",
             "Train Cargo Track Elevated",
             "Cargo Connection",
@@ -27,22 +26,6 @@ namespace MoreNetworkStuff
             "Pedestrian Connection Inside",
             "Bus Station Stop",
             "Bus Station Way",
-            "Train Station Track (C)",
-            "Train Station Track (NP)",
-            "Train Station Track (CNP)",
-            "Station Track Eleva",
-            "Station Track Elevated (C)",
-            "Station Track Elevated (NP)",
-            "Station Track Elevated (CNP)",
-            "Station Track Elevated Narrow",
-            "Station Track Elevated Narrow (C)",
-            "Station Track Elevated Narrow (NP)",
-            "Station Track Elevated Narrow (CNP)",
-            "Station Track Sunken",
-            "Station Track Sunken (NP)",
-            "Station Track Tunnel",
-            "Tram Station Track",
-            "Tram Station Track Sunken",
             "Quay",
             "Canal",
             "Canal2",
@@ -65,8 +48,8 @@ namespace MoreNetworkStuff
                 {
                     if (info.m_placementStyle == ItemClass.Placement.Procedural)
                     {
-                        flag |= (AssetEditorProceduralWhitelist.Contains(info.name) || (info?.name?.Contains("Metro Station Track") ?? false) || (info?.name?.Contains("Metro Track") ?? false));
-                        flag &= (AssetEditorProceduralWhitelist.Contains(info.name) || (info?.name?.Contains("Metro Station Track") ?? false) || (info?.name?.Contains("Metro Track") ?? false));
+                        flag |= (AssetEditorProceduralWhitelist.Contains(info.name) || (info?.name?.Contains("Station Track") ?? false) || (info?.name?.Contains("Metro Track") ?? false));
+                        flag &= (AssetEditorProceduralWhitelist.Contains(info.name) || (info?.name?.Contains("Station Track") ?? false) || (info?.name?.Contains("Metro Track") ?? false));
                     }
                     else if (info.m_placementStyle == ItemClass.Placement.Manual)
                     {
