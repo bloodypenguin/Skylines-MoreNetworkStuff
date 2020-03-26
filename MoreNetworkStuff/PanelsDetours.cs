@@ -10,6 +10,7 @@ namespace MoreNetworkStuff
 {
     public class PanelsDetours
     {
+        //TODO: add more stuff
         public static readonly string[] AssetEditorProceduralWhitelist =
         {
             "Train Cargo Track",
@@ -20,6 +21,7 @@ namespace MoreNetworkStuff
             "Airplane Runway",
             "Airplane Taxiway",
             "Airplane Stop",
+            "Airplane Cargo Stop",
             "Pedestrian Connection",
             "Pedestrian Connection Surface",
             "Pedestrian Connection Underground",
@@ -30,11 +32,24 @@ namespace MoreNetworkStuff
             "Canal",
             "Canal2",
             "Canal3",
+            "Canal Wide",
+            "Canal Wide2",
+            "Canal Wide3",
             "Flood Wall",
             "Castle Wall 1",
             "Castle Wall 2",
             "Castle Wall 3",
             "Trench Ruins 01",
+            "Fishing Dockway",
+            "Aviation Club Runway",
+            "Trolleybus Depot",
+            "Helicopter Depot Path",
+            "Helicopter Stop",
+            "Ferry Dock",
+            "Ferry Dockway",
+            "CableCar Stop",
+            "Blimp Depot Path",
+            "Blimp Stop",
         };
 
         public static bool IsPlacementRelevant(NetInfo info, bool isMapEditor, bool isGame, bool isAssetEditor)
@@ -48,8 +63,8 @@ namespace MoreNetworkStuff
                 {
                     if (info.m_placementStyle == ItemClass.Placement.Procedural)
                     {
-                        flag |= (AssetEditorProceduralWhitelist.Contains(info.name) || (info?.name?.Contains("Station Track") ?? false) || (info?.name?.Contains("Metro Track") ?? false));
-                        flag &= (AssetEditorProceduralWhitelist.Contains(info.name) || (info?.name?.Contains("Station Track") ?? false) || (info?.name?.Contains("Metro Track") ?? false));
+                        flag |= (AssetEditorProceduralWhitelist.Contains(info.name) || (info?.name?.Contains("Station Track") ?? false));
+                        flag &= (AssetEditorProceduralWhitelist.Contains(info.name) || (info?.name?.Contains("Station Track") ?? false));
                     }
                     else if (info.m_placementStyle == ItemClass.Placement.Manual)
                     {

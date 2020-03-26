@@ -50,13 +50,13 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Detours\DefaultToolDetour.cs" />
-    <Compile Include="Detours\GeneratedGroupPanelDetour.cs" />
-    <Compile Include="Detours\RoadsGroupPanelDetour.cs" />
-    <Compile Include="Detours\RoadsPanelDetour.cs" />
+    <Compile Include="Detours\DefaultToolGameDetour.cs" />
+    <Compile Include="Detours\GeneratedGroupPanelAssetAndMapEditorDetour.cs" />
+    <Compile Include="Detours\RoadsGroupPanelAssetEditorDetour.cs" />
+    <Compile Include="Detours\RoadsPanelAssetAndMapEditorDetour.cs" />
     <Compile Include="LoadingExtension.cs" />
     <Compile Include="PanelsDetours.cs" />
-    <Compile Include="Detours\PublicTransportPanelDetour.cs" />
+    <Compile Include="Detours\PublicTransportPanelGameDetour.cs" />
     <Compile Include="MoreNetworkStuff.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Redirection\RedirectionHelper.cs" />
