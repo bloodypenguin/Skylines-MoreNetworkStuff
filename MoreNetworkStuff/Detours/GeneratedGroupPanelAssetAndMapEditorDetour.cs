@@ -4,7 +4,7 @@ using MoreNetworkStuff.Redirection;
 namespace MoreNetworkStuff.Detours
 {
     [TargetType(typeof(GeneratedGroupPanel))]
-    public class GeneratedGroupPanelDetour : GeneratedGroupPanel
+    public class GeneratedGroupPanelAssetAndMapEditorDetour : GeneratedGroupPanel
     {
         [RedirectMethod]
         private bool IsPlacementRelevant(NetInfo info)

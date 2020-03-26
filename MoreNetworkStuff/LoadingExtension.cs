@@ -41,24 +41,29 @@ namespace MoreNetworkStuff
             switch (loading.currentMode)
             {
                 case AppMode.Game:
-                    NetInfoHook.OnPreInitialization += OnPreInitializationInGame;
+                    NetInfoHook.OnPreInitialization += OnPreInitializationInGameAndMapEditor;
                     NetInfoHook.Deploy();
                     TransportInfoHook.OnPreInitialization += OnPreInitializationTI;
                     TransportInfoHook.Deploy();
-                    Redirector<DefaultToolDetour>.Deploy();
-                    Redirector<PublicTransportPanelDetour>.Deploy();
+                    Redirector<DefaultToolGameDetour>.Deploy();
+                    Redirector<PublicTransportPanelGameDetour>.Deploy();
                     break;
                 case AppMode.MapEditor:
                 case AppMode.AssetEditor:
+                    if (loading.currentMode == AppMode.MapEditor)
+                    {
+                        NetInfoHook.OnPreInitialization += OnPreInitializationInGameAndMapEditor;
+                        NetInfoHook.Deploy();
+                    }
                     if (loading.currentMode == AppMode.AssetEditor)
                     {
+                        Redirector<RoadsGroupPanelAssetEditorDetour>.Deploy();
                         NetInfoHook.OnPreInitialization += OnPreInitializationAssetEditor;
                         NetInfoHook.Deploy();
                     }
-                    Redirector<GeneratedGroupPanelDetour>.Deploy();
-                    Redirector<PublicTransportPanelDetour>.Deploy();
-                    Redirector<RoadsGroupPanelDetour>.Deploy();
-                    Redirector<RoadsPanelDetour>.Deploy();
+                    //TODO: enable canals in MapEditor
+                    Redirector<GeneratedGroupPanelAssetAndMapEditorDetour>.Deploy();
+                    Redirector<RoadsPanelAssetAndMapEditorDetour>.Deploy();
                     break;
                 case AppMode.ThemeEditor:
                     break;
@@ -67,29 +72,28 @@ namespace MoreNetworkStuff
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-
-
-
-
-
         }
 
         private static void OnPreInitializationTI(TransportInfo info)
         {
-            if (info.name != "Airplane")
+            if (info?.name != "Airplane")
             {
                 return;
             }
             info.m_pathVisibility = ItemClass.Availability.GameAndMap;
         }
 
-        private static void OnPreInitializationInGame(NetInfo info)
+        private static void OnPreInitializationInGameAndMapEditor(NetInfo info)
         {
+            if (info?.name == null)
+            {
+                return;
+            }
             if (info.name == "Airplane Path" || info.name == "Ship Path")
             {
                 info.m_availableIn = ItemClass.Availability.GameAndMap;
             }
-            if (info.name == "Pedestrian Connection")
+            if (info.name == "Pedestrian Connection" || info.name.Contains("Canal"))
             {
                 //info.m_placementStyle = ItemClass.Placement.Manual;
                 info.m_availableIn = ItemClass.Availability.All;
@@ -119,9 +123,9 @@ namespace MoreNetworkStuff
                 UIView.library.ShowModal<ExceptionPanel>("ExceptionPanel").SetMessage("Missing dependency", "'More Network Stuff' mod requires the 'Prefab Hook' mod to work properly. Please subscribe to the mod and restart the game!", false);
                 return;
             }
-            if (mode == LoadMode.LoadGame || mode == LoadMode.NewGame)
+            if (mode == LoadMode.LoadGame || mode == LoadMode.NewGame || mode == LoadMode.NewGameFromScenario)
             {
-                DefaultToolDetour.Deploy();
+                Redirector<DefaultToolGameDetour>.Deploy();
             }
             else if (mode == LoadMode.LoadAsset || mode == LoadMode.NewAsset)
             {
@@ -172,6 +176,7 @@ namespace MoreNetworkStuff
             {
                 case LoadMode.NewGame:
                 case LoadMode.LoadGame:
+                case LoadMode.NewGameFromScenario:
                     RefreshPanelInGame();
                     break;
             }
@@ -201,7 +206,7 @@ namespace MoreNetworkStuff
         public override void OnLevelUnloading()
         {
             base.OnLevelUnloading();
-            DefaultToolDetour.Revert();
+            Redirector<DefaultToolGameDetour>.Revert();
             var initializer = GameObject.Find("MoreNetworkStuffInitializer");
             if (initializer != null)
             {
@@ -212,11 +217,11 @@ namespace MoreNetworkStuff
         public override void OnReleased()
         {
             base.OnReleased();
-            Redirector<DefaultToolDetour>.Revert();
-            Redirector<GeneratedGroupPanelDetour>.Revert();
-            Redirector<PublicTransportPanelDetour>.Revert();
-            Redirector<RoadsGroupPanelDetour>.Revert();
-            Redirector<RoadsPanelDetour>.Revert();
+            Redirector<DefaultToolGameDetour>.Revert();
+            Redirector<GeneratedGroupPanelAssetAndMapEditorDetour>.Revert();
+            Redirector<PublicTransportPanelGameDetour>.Revert();
+            Redirector<RoadsPanelAssetAndMapEditorDetour>.Revert();
+            Redirector<RoadsGroupPanelAssetEditorDetour>.Revert();
             if (!IsHooked())
             {
                 return;
