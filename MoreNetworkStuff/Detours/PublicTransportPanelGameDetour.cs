@@ -16,7 +16,7 @@ namespace MoreNetworkStuff.Detours
             {
               if (switchMap == null)
               {
-                switchMap = new Dictionary<string, int>(9)
+                switchMap = new Dictionary<string, int>(11)
                 {
                   {
                     "PublicTransportTrain",
@@ -43,16 +43,24 @@ namespace MoreNetworkStuff.Detours
                     5
                   },
                   {
-                    "PublicTransportMonorail",
+                    "PublicTransportAirportArea",
                     6
                   },
                   {
-                    "PublicTransportCableCar",
+                    "PublicTransportMonorail",
                     7
                   },
                   {
-                    "PublicTransportTrolleybus",
+                    "PublicTransportCableCar",
                     8
+                  },
+                  {
+                    "PublicTransportTrolleybus",
+                    9
+                  },
+                  {
+                    "PublicTransportModderPack",
+                    10
                   }
                 };
               }
