@@ -63,7 +63,7 @@ namespace MoreNetworkStuff.Detours
                 switch (num)
                 {
                   case 0:
-                    return (info.m_vehicleTypes & VehicleInfo.VehicleType.Train) != VehicleInfo.VehicleType.None;
+                    return (info.m_vehicleTypes & VehicleInfo.VehicleType.Train) != VehicleInfo.VehicleType.None && (info.m_dlcRequired & SteamHelper.DLC_BitMask.ModderPack8) == SteamHelper.DLC_BitMask.None;
                   case 1:
                     return (info.m_vehicleTypes & VehicleInfo.VehicleType.Metro) != VehicleInfo.VehicleType.None;
                   case 2:
@@ -79,11 +79,15 @@ namespace MoreNetworkStuff.Detours
                     return (info.m_vehicleTypes & (VehicleInfo.VehicleType.Helicopter | VehicleInfo.VehicleType.Blimp | VehicleInfo.VehicleType.Plane)) != VehicleInfo.VehicleType.None;
                     //end mod
                   case 6:
-                    return (info.m_vehicleTypes & VehicleInfo.VehicleType.Monorail) != VehicleInfo.VehicleType.None;
+                    return info.m_dlcRequired == SteamHelper.DLC_BitMask.AirportDLC;
                   case 7:
-                    return (info.m_vehicleTypes & VehicleInfo.VehicleType.CableCar) != VehicleInfo.VehicleType.None;
+                    return (info.m_vehicleTypes & VehicleInfo.VehicleType.Monorail) != VehicleInfo.VehicleType.None;
                   case 8:
+                    return (info.m_vehicleTypes & VehicleInfo.VehicleType.CableCar) != VehicleInfo.VehicleType.None;
+                  case 9:
                     return (info.m_vehicleTypes & VehicleInfo.VehicleType.Trolleybus) != VehicleInfo.VehicleType.None;
+                  case 10:
+                    return (info.m_vehicleTypes & VehicleInfo.VehicleType.Train) != VehicleInfo.VehicleType.None && (info.m_dlcRequired & SteamHelper.DLC_BitMask.ModderPack8) != SteamHelper.DLC_BitMask.None;
                 }
               }
             }

@@ -42,7 +42,7 @@
       <HintPath>C:\Games\Steam\steamapps\common\Cities_Skylines\Cities_Data\Managed\ICities.dll</HintPath>
     </Reference>
     <Reference Include="PrefabHook">
-      <HintPath>..\lib\PrefabHook.dll</HintPath>
+      <HintPath>.\lib\PrefabHook.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="UnityEngine">
